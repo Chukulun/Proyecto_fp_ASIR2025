@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Kubernetes App</title>
+</head>
+<body>
+<div id="id01">Cargando datos...</div>
+<div id="debug"></div>
+<img src="https://assets.datamation.com/uploads/2021/01/3-31510_svg-kubernetes-logo-hd-png-download.png" alt="Kubernetes Logo">
+<script>
+// Función para agregar mensajes de depuración al elemento con ID "debug"
+function appendDebug(text) {
+  var debugElement = document.getElementById("debug");
+  debugElement.innerHTML += "<p>" + text + "</p>";
+}
+
+// URL del backend usando la IP del nodo de Minikube y el puerto NodePort del servicio backend
+var url = "http://192.168.49.2:32162"
+
+// Agregamos un mensaje de depuración indicando que vamos a iniciar la solicitud
+appendDebug("Iniciando solicitud fetch a: " + url);
+
+// Realizamos la solicitud fetch al backend
+fetch(url)
+  .then(response => {
+    // Mostramos el código de estado HTTP de la respuesta
+    appendDebug("Respuesta recibida con status: " + response.status);
+    // Verificamos si la respuesta es válida (status 200-299)
+    if (!response.ok) {
+      throw new Error('Error de red: ' + response.status);
+    }
+    // Convertimos la respuesta a texto para poder inspeccionarla
+    return response.text();
+  })
+  .then(text => {
+    // Mostramos el texto recibido para fines de depuración
+    appendDebug("Texto recibido: " + text);
+    try {
+      // Intentamos parsear el texto como JSON
+      const data = JSON.parse(text);
+      // Si se parsea correctamente, lo indicamos
+      appendDebug("JSON parseado correctamente");
+      // Actualizamos el contenido del elemento con ID "id01" con la información recibida
+      document.getElementById("id01").innerHTML =
+        "<h2>La hora es " + data.time + " y el hostname es " + data.hostname + "</h2>";
+    } catch (e) {
+      // Si hay un error al parsear el JSON, mostramos el error
+      appendDebug("Error parseando JSON: " + e.message);  
+      // Actualizamos el elemento mostrando el error y el texto recibido
+      document.getElementById("id01").innerHTML =
+        "<h2>Error procesando respuesta</h2><pre>" + text + "</pre>";
+    }
+  })
+  .catch(error => {
+    // Capturamos cualquier error en la solicitud fetch
+    appendDebug("Error en fetch: " + error.message);
+    // Mostramos el error en el elemento principal
+    document.getElementById("id01").innerHTML = "<h2>Error: " + error.message + "</h2>";
+  });
+</script>
+</body>
+</html>
